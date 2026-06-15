@@ -1,57 +1,47 @@
 ---
 name: botcity-phoenix
-description: Migra automações UiPath (.xaml) para projetos Python usando o framework BotCity (BeAPro) e o orquestrador BotCity Maestro. Use sempre que o usuário pedir para converter, transcrever, migrar ou portar uma automação UiPath para Python/BotCity, mencionar um arquivo .xaml, falar em "sair do UiPath", "trocar para BotCity", ou pedir para gerar um projeto BotCity a partir de um workflow existente. Cobre o clone do template BeAPro, leitura/resumo do .xaml, transcrição passo a passo com a tabela de equivalências, organização em pastas por responsabilidade e geração do requirements.txt.
+description: >
+  Use this skill when the user asks to convert, migrate, transcribe, or port a UiPath
+  automation to Python/BotCity — including when they mention a .xaml file, want to "move
+  away from UiPath," "switch to BotCity," or generate a BotCity project from an existing
+  workflow. Covers cloning the BeAPro template, summarizing the .xaml, transcribing each
+  action to Python with BotCity Maestro SDK patterns, organizing files by responsibility,
+  and generating an unpinned requirements.txt. Also trigger when a .xaml file is present
+  and the user's intent is to run it as Python RPA, even if "BotCity" is not mentioned.
 ---
 
 # UiPath → BotCity (Python) Migration Skill
 
-Esta skill orienta o Claude Code no fluxo completo de migrar uma automação UiPath
-para um projeto Python rodando no framework BotCity e orquestrado pelo BotCity
-Maestro. O processo tem quatro etapas obrigatórias e nessa ordem:
+Follow these four steps **in order**. Do not skip any step or write Python code before the user validates the `.xaml` summary.
 
-1. **Clonar o template BeAPro** da BotCity como ponto de partida.
-2. **Ler e resumir o `.xaml`** do UiPath de forma clara e direta.
-3. **Transcrever o `.xaml` para Python**, ação por ação, usando a tabela de
-   equivalências em `references/uipath_to_python.md` e o SDK do Maestro.
-4. **Gerar a estrutura de pastas por responsabilidade** e o `requirements.txt`
-   sem versões fixadas (o usuário fará o pinning depois dos testes).
-
-Não pule nenhuma etapa, e não comece a escrever código Python antes de ter o
-resumo do `.xaml` validado pelo usuário.
+1. **Clone the BeAPro template** as the project starting point.
+2. **Read and summarize the `.xaml`** clearly and concisely.
+3. **Transcribe the `.xaml` to Python**, action by action, using `references/uipath_to_python.md` and the Maestro SDK.
+4. **Generate the folder structure** and an unpinned `requirements.txt`.
 
 ---
 
-## Etapa 1 — Clonar o template BeAPro
-
-O BeAPro (BotCity Enterprise Automation Project) é o framework starter oficial
-da BotCity para automações corporativas. Use sempre como base — não invente uma
-estrutura paralela.
+## Step 1 — Clone the BeAPro Template
 
 ```bash
-git clone https://github.com/botcity-dev/beapro-framework.git <nome-do-projeto>
-cd <nome-do-projeto>
+git clone https://github.com/botcity-dev/beapro-framework.git <project-name>
+cd <project-name>
 rm -rf .git
 git init
 ```
 
-Em seguida:
+After cloning:
+- Rename the internal module folder to a `snake_case` name matching the automation domain (e.g., `sales_report`, `bank_reconciliation`).
+- Update `README.md`, `VERSION`, and `setup.py`/`pyproject.toml` with the project name.
+- **Confirm the `bot_id` with the user before proceeding** — this name appears in Maestro and in logs.
 
-- Renomeie o módulo interno (pasta com o código do bot) para um nome em
-  `snake_case` compatível com o domínio da automação (ex.: `relatorio_vendas`,
-  `conciliacao_bancaria`).
-- Atualize `README.md`, `VERSION` e `setup.py`/`pyproject.toml` com o nome do
-  projeto.
-- Confirme com o usuário o `bot_id` antes de prosseguir — esse nome aparece no
-  Maestro e em logs.
-
-Se o usuário não conseguir clonar (rede corporativa bloqueada, por exemplo),
-ofereça como alternativa o template clássico:
+If cloning fails (e.g., corporate network), offer this fallback:
 
 ```bash
 python -m cookiecutter https://github.com/botcity-dev/bot-python-template
 ```
 
-A estrutura mínima gerada é:
+Minimum generated structure:
 
 ```
 <bot_id>/
@@ -60,147 +50,101 @@ A estrutura mínima gerada é:
 ├── VERSION
 ├── <bot_id>/
 │   ├── __init__.py
-│   ├── __main__.py     # entrypoint, não mexer
-│   ├── bot.py          # ponto de entrada do bot
-│   └── resources/      # imagens, templates, arquivos auxiliares
+│   ├── __main__.py     # entrypoint — do not modify
+│   ├── bot.py
+│   └── resources/
 ├── requirements.txt
 ├── setup.py
 ├── build.sh
 └── build.bat
 ```
 
-A partir daqui, **expanda** essa estrutura (etapa 4); não a substitua.
+Expand this structure in Step 4 — do not replace it.
 
 ---
 
-## Etapa 2 — Ler e resumir o `.xaml`
+## Step 2 — Read and Summarize the `.xaml`
 
-O `.xaml` do UiPath é XML. Antes de transcrever, leia o arquivo e produza um
-**resumo curto, em prosa direta**, com:
+Before transcribing, read the `.xaml` file and produce a **short prose summary** with:
 
-1. **Objetivo da automação** em uma frase.
-2. **Sequência de blocos principais** em uma lista numerada curta (no máximo
-   8–12 itens), nomeando cada ação UiPath e o que ela faz no contexto. Ex.:
-   *"3. `Open Browser` → abre o portal do fornecedor"*, *"4. `Type Into` →
-   preenche login e senha lidos de um asset"*.
-3. **Entradas e saídas**: variáveis de entrada (arguments `in`), arquivos
-   lidos, dados consumidos do Orchestrator (assets, queue items) e o que a
-   automação produz (arquivo, e-mail, registro em banco etc.).
-4. **Pontos de atenção**: ações com `RetryScope`, `TryCatch`, esperas
-   condicionais, integrações externas e uso de credenciais.
+1. **Automation objective** — one sentence.
+2. **Main block sequence** — numbered list of up to 8–12 items, naming each UiPath action and what it does in context (e.g., *"3. `Open Browser` → opens the vendor portal"*).
+3. **Inputs and outputs** — `in` arguments, files read, Orchestrator data consumed (assets, queue items), and what the automation produces.
+4. **Points of attention** — `RetryScope`, `TryCatch`, conditional waits, external integrations, credential usage.
 
-### Como ler o `.xaml` na prática
+Focus on flow, not XML structure. If the `.xaml` references other `.xaml` files via `Invoke Workflow File`, list them and ask whether to open them too.
 
-Use `xml.etree.ElementTree` ou `lxml` para parsear. Os atributos relevantes
-ficam principalmente em:
-
-- `<Sequence DisplayName="...">` — agrupamentos lógicos.
-- `<ui:*>` — activities do UiPath.UIAutomation (Click, TypeInto, etc.).
-- `<ui:OpenBrowser>`, `<ui:UseApplicationCard>` — escopos.
-- `Arguments` no nó raiz `<Activity>` — argumentos de entrada/saída.
-- `<TryCatch>` — blocos com tratamento de erro.
-
-Não tente reproduzir o XML inteiro no resumo. O usuário precisa entender o
-**fluxo**, não a árvore. Se o `.xaml` referenciar outros `.xaml` via `Invoke
-Workflow File`, liste-os e pergunte se deve abri-los também.
-
-**Pare aqui e peça validação ao usuário antes da etapa 3.** Um resumo errado
-gera um Python errado.
+**Stop here and ask the user to validate the summary before proceeding to Step 3.**
 
 ---
 
-## Etapa 3 — Transcrever para Python + BotCity SDK
+## Step 3 — Transcribe to Python + BotCity SDK
 
-Com o resumo validado, transcreva ação por ação seguindo a tabela em
-`references/uipath_to_python.md`. Essa tabela é **a fonte da verdade** para a
-escolha de bibliotecas. Leia-a antes de escrever a primeira linha de código.
+With the validated summary, transcribe action by action. Read `references/uipath_to_python.md` before writing any code — it is the source of truth for library choices.
 
-### Princípios obrigatórios
+### Mandatory coding rules
 
-Estes princípios não são negociáveis e o código gerado precisa atendê-los:
+- **PEP 8**: `snake_case` for functions/variables, `PascalCase` for classes, `UPPER_SNAKE_CASE` for constants.
+- **Type hints** (PEP 484/604), `pathlib` instead of `os.path`, f-strings, `int | None` union syntax (Python 3.10+).
+- **Docstrings** on all public functions and classes (Google or NumPy style). Inline comments only where intent is non-obvious.
+- **Specific `try/except`** — never bare `except:` or `except Exception:` inside critical actions. Catch the most specific exception the library raises.
+- **`logging` instead of `print`** — one logger per module via `logging.getLogger(__name__)`.
+- **No hardcoded credentials** — use `os.environ` or `maestro.get_credential(...)`.
+- **Idempotency** — the automation must be safe to run twice without unintended side effects.
 
-- **PEP 8** para nomenclatura e formatação. Funções e variáveis em
-  `snake_case`, classes em `PascalCase`, constantes em `UPPER_SNAKE_CASE`.
-- **PEPs recentes**: use type hints (PEP 484/604), `pathlib` no lugar de
-  `os.path`, f-strings, `match/case` quando fizer sentido, e a sintaxe nova de
-  union (`int | None` em vez de `Optional[int]`) — exige Python 3.10+.
-- **Docstrings obrigatórias** em todas as funções e classes públicas, no estilo
-  Google ou NumPy. Comentários inline só onde a intenção não é óbvia pelo
-  código.
-- **`try/except` específico**, nunca `except:` ou `except Exception:` no nível
-  externo de uma ação crítica. Capture a exceção mais específica que a
-  biblioteca lança (ex.: `selenium.common.exceptions.TimeoutException`,
-  `requests.exceptions.HTTPError`).
-- **Nada de over-engineering**. Sem factories, sem strategy pattern, sem
-  injeção de dependência elaborada se a automação tem 200 linhas. Código
-  robusto > código rebuscado.
-- **`logging` em vez de `print`**. Configure um logger por módulo
-  (`logging.getLogger(__name__)`).
-- **Recursos externos via variáveis de ambiente ou assets do Maestro**, nunca
-  hardcoded. Use `os.environ` ou `maestro.get_credential(...)`.
-- **Idempotência** sempre que possível: a automação deve poder rodar duas vezes
-  sem efeito colateral indesejado (verificar antes de criar, sobrescrever de
-  forma controlada).
+### BotCity Maestro integration
 
-### Integração com o BotCity Maestro (orquestrador)
+Every corporate automation must, at minimum:
+1. Instantiate the SDK and retrieve the current execution.
+2. Report a final status (`SUCCESS`, `FAILED`, `PARTIALLY_COMPLETED`).
+3. Emit alerts (`AlertType.INFO/WARN/ERROR`) at critical points.
+4. Log quantitative results (`new_result_step`) — items processed, items failed, etc.
 
-O Maestro substitui o UiPath Orchestrator. Toda automação corporativa deve, no
-mínimo:
-
-1. Instanciar o SDK e recuperar a execução atual.
-2. Reportar status final (`SUCCESS`, `FAILED`, `PARTIALLY_COMPLETED`).
-3. Emitir alertas (`AlertType.INFO/WARN/ERROR`) nos pontos críticos.
-4. Registrar resultados quantitativos (`new_result_step`) — itens processados,
-   itens com erro etc.
-
-Esqueleto mínimo do `bot.py`:
+Minimum `bot.py` skeleton:
 
 ```python
-"""Entrypoint do bot. Orquestra o fluxo e reporta ao Maestro."""
+"""Bot entrypoint. Orchestrates the flow and reports to Maestro."""
 from __future__ import annotations
 
 import logging
 
-from botcity.maestro import AlertType, BotExecution, BotMaestroSDK
-from botcity.maestro import FinishStatus
+from botcity.maestro import AlertType, BotExecution, BotMaestroSDK, FinishStatus
 
-# Não derrubar o bot quando rodando localmente sem Maestro
-BotMaestroSDK.RAISE_NOT_CONNECTED = False
+BotMaestroSDK.RAISE_NOT_CONNECTED = False  # don't crash when running locally without Maestro
 
 logger = logging.getLogger(__name__)
 
 
 def main() -> None:
-    """Ponto de entrada chamado pelo BotCity Runner."""
+    """Entry point called by the BotCity Runner."""
     maestro = BotMaestroSDK.from_sys_args()
     execution: BotExecution = maestro.get_execution()
 
     try:
-        # Importação local evita custo quando o bot só está validando args
-        from relatorio_vendas.flow import executar_fluxo
+        from sales_report.flow import run_flow
 
-        total, erros = executar_fluxo(maestro, execution)
+        total, errors = run_flow(maestro, execution)
 
         maestro.finish_task(
             task_id=execution.task_id,
             status=FinishStatus.SUCCESS,
-            message=f"Processados {total} itens, {erros} com erro.",
+            message=f"Processed {total} items, {errors} with errors.",
             total_items=total,
-            processed_items=total - erros,
-            failed_items=erros,
+            processed_items=total - errors,
+            failed_items=errors,
         )
-    except Exception as exc:  # noqa: BLE001 — borda do bot, logar e reportar
-        logger.exception("Falha não tratada na execução do bot.")
+    except Exception as exc:  # noqa: BLE001 — bot boundary, log and report
+        logger.exception("Unhandled failure during bot execution.")
         maestro.alert(
             task_id=execution.task_id,
-            title="Falha crítica",
+            title="Critical failure",
             message=str(exc),
             alert_type=AlertType.ERROR,
         )
         maestro.finish_task(
             task_id=execution.task_id,
             status=FinishStatus.FAILED,
-            message=f"Erro: {exc}",
+            message=f"Error: {exc}",
         )
         raise
 
@@ -209,37 +153,29 @@ if __name__ == "__main__":
     main()
 ```
 
-Esse padrão — `try/except` único no topo do `main` para garantir que o Maestro
-**sempre** recebe um status final — é a única exceção tolerada ao uso de
-`Exception` genérico. As demais exceções devem ser tratadas no nível certo,
-próximas à ação que pode falhar.
+The single top-level `except Exception` in `main` is the only tolerated broad catch — it guarantees Maestro always receives a final status. All other exceptions must be handled close to the action that can fail.
 
-### Mapeamento das ações UiPath
+### Library selection defaults
 
-Para cada activity identificada no resumo da Etapa 2, consulte
-`references/uipath_to_python.md` e escolha a biblioteca apropriada. As regras
-de bolso:
+Consult `references/uipath_to_python.md` for each identified activity. Quick rules:
 
-- **Web automation** → `selenium` ou `playwright` (preferir `playwright` em
-  projetos novos pela API mais previsível).
-- **Desktop com Computer Vision** → `botcity-framework-core`
-  (`DesktopBot.find`, `click`, `type_keys`).
-- **Excel** → `openpyxl` para arquivos puros, `pandas` para transformações.
-- **PDF** → `pypdf` ≥ 6.7.2 (versão anterior tem CVE de DoS) ou `pdfplumber`
-  para extração de texto/tabelas.
-- **HTTP/API** → `httpx` (preferir sobre `requests` em código novo).
-- **Banco** → `sqlalchemy` como camada universal.
-- **OCR** → `pytesseract` ou `easyocr` dependendo do volume.
+| Need | Default | Alternative |
+|------|---------|-------------|
+| Web automation | `playwright` | `selenium` for existing projects |
+| Desktop (Computer Vision) | `botcity-framework-core` | — |
+| Excel | `openpyxl` for raw files | `pandas` for transformations |
+| PDF text/tables | `pdfplumber` | `pypdf` ≥ 6.7.2 |
+| HTTP/API | `httpx` | `requests` for legacy code |
+| Database | `sqlalchemy` | — |
+| OCR | `pytesseract` | `easyocr` for high volume |
 
-Não misture estilos: se escolher `playwright`, mantenha em todo o projeto. Não
-combine `selenium` e `playwright` no mesmo bot.
+Do not mix automation styles: if you choose `playwright`, use it throughout. Never combine `selenium` and `playwright` in the same bot.
 
 ---
 
-## Etapa 4 — Estrutura de pastas por responsabilidade
+## Step 4 — Folder Structure and `requirements.txt`
 
-A estrutura final, expandindo o template BeAPro, deve separar claramente as
-camadas:
+Expand the BeAPro template into this layout:
 
 ```
 <bot_id>/
@@ -247,72 +183,42 @@ camadas:
 ├── VERSION
 ├── requirements.txt
 ├── setup.py
-├── .env.example                    # template das variáveis de ambiente
+├── .env.example
 ├── <bot_id>/
 │   ├── __init__.py
 │   ├── __main__.py
-│   ├── bot.py                      # entrypoint + integração Maestro
-│   ├── flow.py                     # orquestração do fluxo (alto nível)
-│   ├── config.py                   # constantes, paths, leitura de .env
-│   ├── actions/                    # ações atômicas reutilizáveis
+│   ├── bot.py                      # entrypoint + Maestro integration
+│   ├── flow.py                     # high-level flow orchestration
+│   ├── config.py                   # constants, paths, .env loading
+│   ├── actions/                    # reusable atomic actions
 │   │   ├── __init__.py
-│   │   ├── web.py                  # clicks, fills, navegação
-│   │   ├── excel.py                # leitura/escrita de planilhas
-│   │   ├── pdf.py                  # parsing/geração de PDF
-│   │   └── email_actions.py        # envio/leitura de e-mail
-│   ├── services/                   # integrações externas
+│   │   ├── web.py
+│   │   ├── excel.py
+│   │   ├── pdf.py
+│   │   └── email_actions.py
+│   ├── services/                   # external system integrations
 │   │   ├── __init__.py
-│   │   ├── api_client.py           # chamadas HTTP a sistemas externos
-│   │   └── database.py             # conexão e queries
-│   ├── models/                     # dataclasses / pydantic models
+│   │   ├── api_client.py
+│   │   └── database.py
+│   ├── models/                     # dataclasses / Pydantic models
 │   │   ├── __init__.py
 │   │   └── entities.py
 │   ├── utils/
 │   │   ├── __init__.py
-│   │   ├── logger.py               # configuração do logging
-│   │   └── retry.py                # decorator de retry quando necessário
-│   └── resources/                  # imagens, templates HTML, payloads
+│   │   ├── logger.py
+│   │   └── retry.py
+│   └── resources/
 └── tests/
     ├── __init__.py
     ├── test_actions.py
     └── test_flow.py
 ```
 
-### Por que essa divisão
+Dependency flow always goes top-down: `bot.py` → `flow.py` → `actions/` + `services/`. Nothing in `actions/` or `services/` may import from `flow.py` or `bot.py`. Pass `maestro` and `execution` as parameters into `flow.py` — do not instantiate them there.
 
-- **`bot.py`** só sabe falar com o Maestro e delegar para `flow.py`. Trocar o
-  orquestrador no futuro mexe num arquivo só.
-- **`flow.py`** descreve a automação em alto nível (qual o passo a passo),
-  chamando funções de `actions/` e `services/`. Lendo `flow.py` o usuário
-  entende a automação sem precisar abrir mais nada.
-- **`actions/`** são funções puras e testáveis. Cada arquivo agrupa por
-  tecnologia (web, excel, pdf...) e não por feature do bot — isso favorece
-  reuso entre projetos.
-- **`services/`** isola chamadas a sistemas externos (APIs, banco). Permite
-  mockar nos testes.
-- **`models/`** centraliza as estruturas de dados. Use `dataclasses` para
-  estruturas simples e `pydantic` quando precisar de validação.
-- **`utils/`** é para infraestrutura: logging, retry, helpers genéricos. Se
-  algo aqui virar grande, promova para uma pasta própria.
+### `requirements.txt` — no pinned versions
 
-### Boas práticas de organização
-
-- Nenhum módulo de `actions/` ou `services/` deve importar de `flow.py` ou de
-  `bot.py`. A dependência flui sempre do topo para baixo.
-- `flow.py` recebe o `maestro` e o `execution` como parâmetros — não os
-  instancia. Isso facilita teste e reuso.
-- Funções em `actions/` recebem objetos prontos (um `Page` do Playwright, um
-  `DataFrame` do pandas) em vez de criar tudo do zero. Composição > herança.
-
----
-
-## Etapa 5 — `requirements.txt` sem versões fixadas
-
-Liste somente as dependências **diretas** que o projeto realmente importa,
-**sem pinning**. O usuário vai rodar os testes e fixar versões depois com
-`pip freeze` ou `pip-compile`.
-
-Formato:
+List only the direct dependencies actually used, without pinning. The user will pin after running tests with `pip freeze` or `pip-compile`.
 
 ```text
 # Core BotCity
@@ -320,7 +226,7 @@ botcity-framework-core
 botcity-framework-web
 botcity-maestro-sdk
 
-# Adicionar conforme a automação usar:
+# Add only what the transcription uses:
 # playwright
 # selenium
 # pandas
@@ -332,46 +238,45 @@ botcity-maestro-sdk
 # python-dotenv
 ```
 
-Inclua **apenas** o que a transcrição efetivamente usa. Não jogue todas as
-libs da tabela de equivalências no requirements — manter `requirements.txt`
-enxuto é uma boa prática de segurança e manutenção.
-
-Comente uma linha por seção indicando o motivo da dependência quando não for
-óbvio, ex.:
+Add a comment when the reason isn't obvious:
 
 ```text
-pypdf  # >= 6.7.2 será fixado após testes (CVE-2026-27628 em versões anteriores)
+pypdf  # pin to >= 6.7.2 after tests (earlier versions have a DoS CVE)
 ```
 
 ---
 
-## Checklist final antes de entregar
+## Gotchas
 
-Antes de dar o projeto como pronto, verifique:
-
-- [ ] Template BeAPro clonado, `.git` removido, novo `git init` feito.
-- [ ] Resumo do `.xaml` validado pelo usuário.
-- [ ] Cada activity do `.xaml` tem correspondência no código Python (ou foi
-      explicitamente marcada como não aplicável e justificada).
-- [ ] `bot.py` reporta status final ao Maestro em todos os caminhos.
-- [ ] `flow.py` legível como roteiro da automação.
-- [ ] Funções com docstrings; tipos anotados.
-- [ ] `try/except` específicos, sem `except:` solto.
-- [ ] Sem credenciais hardcoded — tudo via `.env` ou Maestro credentials.
-- [ ] Estrutura de pastas conforme o layout acima.
-- [ ] `requirements.txt` sem versões fixadas, contendo só o que é usado.
-- [ ] `README.md` explica como rodar local (`python -m <bot_id>`) e como
-      empacotar para o Maestro (`./build.sh`).
+- **`bot_id` naming**: the `bot_id` must match exactly between the Maestro registration and the Python package name — a mismatch causes the Runner to fail silently.
+- **`BotMaestroSDK.RAISE_NOT_CONNECTED = False`**: set this before any SDK call, not just before `from_sys_args()`, or local runs without a Maestro connection will crash immediately.
+- **`Invoke Workflow File` in `.xaml`**: each referenced sub-workflow should become its own module in `flow.py`, not a separate `bot.py`. Ask the user for all referenced `.xaml` files before starting the transcription.
+- **Selenium Grid vs. local WebDriver**: if the original UiPath bot targeted a remote browser, the `playwright` equivalent needs `connect_over_cdp()` or `connect()`, not a local `launch()`.
+- **Assets vs. Arguments**: UiPath `in` arguments map to Maestro `execution.parameters`, not `maestro.get_credential()`. Credentials (user/password) go through `get_credential()`; config values go through `parameters`.
 
 ---
 
-## Referências
+## Final Checklist
 
-- `references/uipath_to_python.md` — tabela completa de equivalências
-  UiPath → Python/BotCity. **Leia antes de codar.**
-- Documentação BotCity Maestro:
-  https://documentation.botcity.dev/maestro/maestro-sdk/
-- Template BotCity Python:
-  https://github.com/botcity-dev/bot-python-template
-- BeAPro framework:
-  https://github.com/botcity-dev/beapro-framework
+Before marking the project complete:
+
+- [ ] BeAPro template cloned, `.git` removed, new `git init` done.
+- [ ] `.xaml` summary validated by the user.
+- [ ] Every `.xaml` activity has a Python equivalent (or is explicitly marked N/A with justification).
+- [ ] `bot.py` reports a final status to Maestro on all code paths.
+- [ ] `flow.py` reads like a high-level automation script.
+- [ ] All functions have docstrings; all types are annotated.
+- [ ] Specific `try/except` throughout; no bare `except:`.
+- [ ] No hardcoded credentials — all via `.env` or Maestro credentials.
+- [ ] Folder structure matches the layout above.
+- [ ] `requirements.txt` is unpinned and contains only what is actually used.
+- [ ] `README.md` explains how to run locally (`python -m <bot_id>`) and how to package for Maestro (`./build.sh`).
+
+---
+
+## References
+
+- `references/uipath_to_python.md` — full UiPath → Python/BotCity equivalence table. **Read before coding.**
+- BotCity Maestro SDK docs: https://documentation.botcity.dev/maestro/maestro-sdk/
+- BotCity Python template: https://github.com/botcity-dev/bot-python-template
+- BeAPro framework: https://github.com/botcity-dev/beapro-framework
