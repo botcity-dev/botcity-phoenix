@@ -1,140 +1,140 @@
-# Equivalência de ações UiPath → Python
+# UiPath Actions → Python Equivalence
 
-Tabela de referência consultada durante a Etapa 3 da skill `botcity-phoenix`.
-Mantenha esse arquivo aberto enquanto faz a transcrição.
+Reference table consulted during Step 3 of the `botcity-phoenix` skill.
+Keep this file open while performing the transcription.
 
-## 1. Automação de UI Web (UiPath.UIAutomation / UiPath.Web)
+## 1. Web UI Automation (UiPath.UIAutomation / UiPath.Web)
 
-| Ação UiPath | Equivalente Python | Versão segura sugerida |
+| UiPath Action | Python Equivalent | Suggested Stable Version |
 |---|---|---|
-| Open Browser / Use Application Browser | `selenium` (webdriver) ou `playwright` | selenium ≥ 4.14.0 · playwright ≥ 1.50 |
-| Click / Type Into / Hover | `selenium.webdriver.ActionChains` · `page.click()` / `page.fill()` no Playwright | — |
+| Open Browser / Use Application Browser | `selenium` (webdriver) or `playwright` | selenium ≥ 4.27.0 · playwright ≥ 1.49 |
+| Click / Type Into / Hover | `selenium.webdriver.ActionChains` · `page.click()` / `page.fill()` in Playwright | — |
 | Get Text / Get Attribute | `element.text` / `element.get_attribute()` (Selenium) · `page.text_content()` (Playwright) | — |
 | Find Element / Find Children | `find_element(By.XPATH, ...)` · `page.locator()` | — |
 | Wait Element Appear / Vanish | `WebDriverWait` + `expected_conditions` · `page.wait_for_selector()` | — |
-| Extract Structured Data / Data Scraping | `beautifulsoup4` + `lxml`, ou `scrapy` para volumes grandes | bs4 ≥ 4.12 · scrapy ≥ 2.11 |
+| Extract Structured Data / Data Scraping | `beautifulsoup4` + `lxml`, or `scrapy` for large volumes | bs4 ≥ 4.12.3 · scrapy ≥ 2.12 |
 | Inject JS / Execute Script | `driver.execute_script()` · `page.evaluate()` | — |
-| Web Automation com Computer Vision | `botcity-framework-web` | ≥ 0.13 |
+| Web Automation with Computer Vision | `botcity-framework-web` | ≥ 0.20.0 |
 
-## 2. Automação Desktop (UiPath.UIAutomation Desktop)
+## 2. Desktop Automation (UiPath.UIAutomation Desktop)
 
-| Ação UiPath | Equivalente Python |
-|---|---|
-| Click / Type Into / Send Hotkey (desktop) | `pyautogui`, `pynput` |
-| Window automation (Windows nativas) | `pywinauto` (controle por API Win32/UIA) |
-| Image-based automation / Computer Vision Activities | `botcity-framework-core` (combina template matching + OCR) |
-| Get OCR Text / Screen OCR | `pytesseract` (wrapper do Tesseract) ou `easyocr` |
-| Take Screenshot | `pyautogui.screenshot()` ou `mss` (mais rápido) |
-| Mouse Move / Scroll | `pyautogui.moveTo()`, `pyautogui.scroll()` |
+| UiPath Action | Python Equivalent | Suggested Stable Version |
+|---|---|---|
+| Click / Type Into / Send Hotkey (desktop) | `pyautogui`, `pynput` | pyautogui ≥ 0.9.54 · pynput ≥ 1.7.7 |
+| Window automation (native Windows) | `pywinauto` (control via Win32/UIA API) | ≥ 0.6.8 |
+| Image-based automation / Computer Vision Activities | `botcity-framework-core` (combines template matching + OCR) | ≥ 0.20.0 |
+| Get OCR Text / Screen OCR | `pytesseract` (Tesseract wrapper) or `easyocr` | pytesseract ≥ 0.3.13 · easyocr ≥ 1.7.2 |
+| Take Screenshot | `pyautogui.screenshot()` or `mss` (faster) | mss ≥ 9.0.1 |
+| Mouse Move / Scroll | `pyautogui.moveTo()`, `pyautogui.scroll()` | — |
 
-## 3. Excel / Planilhas (UiPath.Excel.Activities)
+## 3. Excel / Spreadsheets (UiPath.Excel.Activities)
 
-| Ação UiPath | Equivalente Python |
-|---|---|
-| Excel Application Scope / Use Excel File | `openpyxl` (≥ 3.1.5) para `.xlsx` puro · `xlwings` quando precisa do Excel aberto com macros |
-| Read Range / Write Range | `pandas.read_excel()` / `df.to_excel()` |
-| Read Cell / Write Cell | `ws["A1"].value` no `openpyxl` |
-| Filter / Sort Table | `pandas` (`df.query()`, `df.sort_values()`) |
-| Append Range | `pandas.concat()` + `to_excel()` ou `openpyxl` em modo append |
-| Pivot Table | `pandas.pivot_table()` |
-| Format Cells (estilos, cores) | `openpyxl.styles` |
+| UiPath Action | Python Equivalent | Suggested Stable Version |
+|---|---|---|
+| Excel Application Scope / Use Excel File | `openpyxl` (≥ 3.1.5) for pure `.xlsx` · `xlwings` when you need Excel open with macros | openpyxl ≥ 3.1.5 · xlwings ≥ 0.33.0 |
+| Read Range / Write Range | `pandas.read_excel()` / `df.to_excel()` | pandas ≥ 2.2.0 · openpyxl ≥ 3.1.5 |
+| Read Cell / Write Cell | `ws["A1"].value` in `openpyxl` | — |
+| Filter / Sort Table | `pandas` (`df.query()`, `df.sort_values()`) | — |
+| Append Range | `pandas.concat()` + `to_excel()` or `openpyxl` in append mode | — |
+| Pivot Table | `pandas.pivot_table()` | — |
+| Format Cells (styles, colors) | `openpyxl.styles` | — |
 
 ## 4. PDF (UiPath.PDF.Activities)
 
-| Ação UiPath | Equivalente Python | Observação de segurança |
+| UiPath Action | Python Equivalent | Security Note |
 |---|---|---|
-| Read PDF Text | `pdfplumber` ou `pypdf` ≥ 6.7.2 | `pypdf < 6.7.2` tem DoS por loop infinito (CVE-2026-27628). Use ≥ 6.7.2 |
-| Read PDF With OCR | `ocrmypdf` ou `pdf2image` + `pytesseract` | — |
-| Extract Images from PDF | `pikepdf` (baseado em qpdf, robusto contra PDFs malformados) | pikepdf ≥ 9.x |
-| Merge / Split PDF | `pypdf` ≥ 6.7.2 ou `pikepdf` | — |
-| Manipulate PDF (rotate, watermark) | `pypdf` ≥ 6.7.2 · `reportlab` para gerar do zero | — |
-| Fill PDF Form | `pdfforms` ou `pikepdf` | — |
+| Read PDF Text | `pdfplumber` or `pypdf` ≥ 6.7.2 | `pypdf < 6.7.2` has DoS via infinite loop (CVE-2026-27628). Use ≥ 6.7.2 |
+| Read PDF With OCR | `ocrmypdf` or `pdf2image` + `pytesseract` | ocrmypdf ≥ 16.0 · pdf2image ≥ 1.17 |
+| Extract Images from PDF | `pikepdf` (based on qpdf, robust against malformed PDFs) | pikepdf ≥ 9.5 |
+| Merge / Split PDF | `pypdf` ≥ 6.7.2 or `pikepdf` | pypdf ≥ 6.7.2 |
+| Manipulate PDF (rotate, watermark) | `pypdf` ≥ 6.7.2 · `reportlab` to generate from scratch | reportlab ≥ 4.2 |
+| Fill PDF Form | `pdfforms` or `pikepdf` | pdfforms ≥ 0.2.0 |
 
 ## 5. Email (UiPath.Mail.Activities)
 
-| Ação UiPath | Equivalente Python |
-|---|---|
-| Get IMAP Mail Messages | `imapclient` + `email` (stdlib) |
-| Get Outlook Mail Messages | `pywin32` (`win32com.client`) no Windows com Outlook instalado |
-| Send SMTP Mail Message | `smtplib` + `email.mime` (stdlib) — sem dependências externas |
-| Send Exchange / O365 | `O365` (pacote `python-o365`) via Microsoft Graph |
-| Save Attachments | iteração em `message.iter_attachments()` |
+| UiPath Action | Python Equivalent | Suggested Stable Version |
+|---|---|---|
+| Get IMAP Mail Messages | `imapclient` + `email` (stdlib) | imapclient ≥ 3.0.1 |
+| Get Outlook Mail Messages | `pywin32` (`win32com.client`) on Windows with Outlook installed | pywin32 ≥ 308 |
+| Send SMTP Mail Message | `smtplib` + `email.mime` (stdlib) — no external dependencies | — |
+| Send Exchange / O365 | `O365` (package `python-o365`) via Microsoft Graph | python-o365 ≥ 2.0.34 |
+| Save Attachments | iteration over `message.iter_attachments()` | — |
 
-## 6. Sistema, Arquivos e Workflow (UiPath.System.Activities)
+## 6. System, Files and Workflow (UiPath.System.Activities)
 
-| Ação UiPath | Equivalente Python |
+| UiPath Action | Python Equivalent |
 |---|---|
 | Copy File / Move File / Delete File | `shutil`, `os`, `pathlib` (stdlib) |
 | Create Directory / Path Exists | `pathlib.Path.mkdir()`, `.exists()` |
 | Read Text File / Write Text File | `pathlib.Path.read_text()` / `write_text()` |
 | Wait / Delay | `time.sleep()` |
-| If / Switch / For Each | construções nativas do Python |
+| If / Switch / For Each | native Python constructs |
 | Try Catch | `try/except/finally` |
-| Invoke Workflow / Invoke Code | `import` de módulos ou `subprocess.run()` |
+| Invoke Workflow / Invoke Code | `import` of modules or `subprocess.run()` |
 | Log Message | `logging` (stdlib) |
-| Get Environment Variable | `os.environ` ou `python-dotenv` para `.env` files |
-| Run Python Script | nativo |
+| Get Environment Variable | `os.environ` or `python-dotenv` for `.env` files |
+| Run Python Script | native |
 
-## 7. Dados e Programação (UiPath.System – Data activities)
+## 7. Data and Programming (UiPath.System – Data activities)
 
-| Ação UiPath | Equivalente Python |
-|---|---|
-| Build Data Table / Filter Data Table | `pandas.DataFrame` |
-| For Each Row in Data Table | `df.iterrows()` ou `df.itertuples()` (mais rápido) |
-| Merge Data Table / Join | `pandas.merge()`, `pandas.concat()` |
-| Output Data Table (CSV) | `df.to_csv()` |
-| Manipulação de strings (Trim, Split, Replace) | métodos nativos de `str` |
-| Regex (Matches, Replace) | módulo `re` (stdlib) |
-| Date manipulation | `datetime` (stdlib) ou `pendulum` |
+| UiPath Action | Python Equivalent | Suggested Stable Version |
+|---|---|---|
+| Build Data Table / Filter Data Table | `pandas.DataFrame` | pandas ≥ 2.2.0 |
+| For Each Row in Data Table | `df.iterrows()` or `df.itertuples()` (faster) | — |
+| Merge Data Table / Join | `pandas.merge()`, `pandas.concat()` | — |
+| Output Data Table (CSV) | `df.to_csv()` | — |
+| String manipulation (Trim, Split, Replace) | native `str` methods | — |
+| Regex (Matches, Replace) | `re` module (stdlib) | — |
+| Date manipulation | `datetime` (stdlib) or `pendulum` | pendulum ≥ 3.0 |
 
 ## 8. HTTP / APIs (UiPath.WebAPI.Activities)
 
-| Ação UiPath | Equivalente Python |
+| UiPath Action | Python Equivalent | Suggested Stable Version |
+|---|---|---|
+| HTTP Request | `httpx` (recommended — supports async/HTTP-2) or `requests` | httpx ≥ 0.28 · requests ≥ 2.32 |
+| Deserialize JSON | `json.loads()` (stdlib) | — |
+| SOAP Request | `zeep` | zeep ≥ 4.3 |
+| OAuth2 | `authlib` or `requests-oauthlib` | authlib ≥ 1.4 · requests-oauthlib ≥ 1.4 |
+
+## 9. Database (UiPath.Database.Activities)
+
+| UiPath Action | Python Equivalent | Suggested Stable Version |
+|---|---|---|
+| Connect / Execute Query / Execute Non-Query | `sqlalchemy` (universal engine) | sqlalchemy ≥ 2.0.36 |
+| SQL Server | `pyodbc` or `pymssql` | pyodbc ≥ 5.2 · pymssql ≥ 2.3 |
+| Oracle | `oracledb` (replaced cx_Oracle) | oracledb ≥ 2.5 |
+| PostgreSQL | `psycopg` (v3) | psycopg ≥ 3.2 |
+| MySQL | `mysqlclient` or `mysql-connector-python` | mysqlclient ≥ 2.3 · mysql-connector-python ≥ 9.0 |
+| Full ORM | `sqlalchemy` 2.x or `SQLModel` | SQLModel ≥ 0.0.22 |
+
+## 10. OCR and Document Understanding (UiPath.DocumentUnderstanding)
+
+| UiPath Action | Python Equivalent | Suggested Stable Version |
+|---|---|---|
+| Digitize Document | `pdfplumber` + `pytesseract` or `easyocr` | — |
+| Classify Document | `transformers` (LayoutLM, Donut models) | transformers ≥ 4.48 |
+| Extract Data (forms / invoices) | `donut-python`, `layoutparser`, or APIs (Azure Document Intelligence, AWS Textract) | layoutparser ≥ 0.3.4 |
+| Validate Extraction Results | pure Python logic + `pydantic` for schema validation | pydantic ≥ 2.10 |
+
+## 11. Enterprise System Integrations (Integration Service)
+
+| UiPath Action | Python Equivalent | Suggested Stable Version |
+|---|---|---|
+| SAP Integration | `pyrfc` (SAP NetWeaver RFC) or UI automation via `botcity-framework-core` | pyrfc ≥ 2.5 |
+| Active Directory | `ldap3` | ldap3 ≥ 2.9 |
+| AWS | `boto3` | boto3 ≥ 1.36 |
+| Azure | `azure-sdk-for-python` (various subpackages) | — |
+| Google Workspace | `google-api-python-client` | google-api-python-client ≥ 2.154 |
+| Salesforce | `simple-salesforce` | simple-salesforce ≥ 1.12 |
+| ServiceNow | `pysnow` | pysnow ≥ 0.9 |
+| Slack | `slack-sdk` | slack-sdk ≥ 3.35 |
+| Microsoft Teams / Graph | `msgraph-sdk` | msgraph-sdk ≥ 1.0 |
+
+## 12. Orchestration (UiPath Orchestrator)
+
+| UiPath Functionality | Python Stack Equivalent |
 |---|---|
-| HTTP Request | `httpx` (recomendado — suporta async/HTTP-2) ou `requests` |
-| Deserialize JSON | `json.loads()` (stdlib) |
-| SOAP Request | `zeep` |
-| OAuth2 | `authlib` ou `requests-oauthlib` |
-
-## 9. Banco de Dados (UiPath.Database.Activities)
-
-| Ação UiPath | Equivalente Python |
-|---|---|
-| Connect / Execute Query / Execute Non-Query | `sqlalchemy` (engine universal) |
-| SQL Server | `pyodbc` ou `pymssql` |
-| Oracle | `oracledb` (substituiu cx_Oracle) |
-| PostgreSQL | `psycopg` (v3) |
-| MySQL | `mysqlclient` ou `mysql-connector-python` |
-| ORM completo | `sqlalchemy` 2.x ou `SQLModel` |
-
-## 10. OCR e Document Understanding (UiPath.DocumentUnderstanding)
-
-| Ação UiPath | Equivalente Python |
-|---|---|
-| Digitize Document | `pdfplumber` + `pytesseract` ou `easyocr` |
-| Classify Document | `transformers` (modelos LayoutLM, Donut) |
-| Extract Data (forms / invoices) | `donut-python`, `layoutparser`, ou APIs (Azure Document Intelligence, AWS Textract) |
-| Validate Extraction Results | lógica Python pura + `pydantic` para validação de schema |
-
-## 11. Integrações com sistemas corporativos (Integration Service)
-
-| Ação UiPath | Equivalente Python |
-|---|---|
-| SAP Integration | `pyrfc` (SAP NetWeaver RFC) ou automação UI via `botcity-framework-core` |
-| Active Directory | `ldap3` |
-| AWS | `boto3` |
-| Azure | `azure-sdk-for-python` (vários subpacotes) |
-| Google Workspace | `google-api-python-client` |
-| Salesforce | `simple-salesforce` |
-| ServiceNow | `pysnow` |
-| Slack | `slack-sdk` |
-| Microsoft Teams / Graph | `msgraph-sdk` |
-
-## 12. Orquestração (UiPath Orchestrator)
-
-| Funcionalidade UiPath | Equivalente no stack Python |
-|---|---|
-| Orchestrator (queues, assets, jobs, logs) | **BotCity Maestro** (orquestrador nativo Python) |
-| Agendamento de bots | SDK ou API Maestro BotCity|
-| Credentials / Assets | `keyring` (cofre local) + Maestro para corporativo |
-| Fila de trabalho | filas do Maestro, ou `celery` + `redis` para volumes altos |
+| Orchestrator (queues, assets, jobs, logs) | **BotCity Maestro** (native Python orchestrator) |
+| Bot scheduling | BotCity Maestro SDK or API |
+| Credentials / Assets | `keyring` (local vault) + Maestro for enterprise |
+| Work queue | Maestro queues, or `celery` + `redis` for high volumes |

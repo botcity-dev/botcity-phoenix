@@ -32,8 +32,8 @@ git init
 
 After cloning:
 - Rename the internal module folder to a `snake_case` name matching the automation domain (e.g., `sales_report`, `bank_reconciliation`).
-- Update `README.md`, `VERSION`, and `setup.py`/`pyproject.toml` with the project name.
-- **Confirm the `bot_id` with the user before proceeding** — this name appears in Maestro and in logs.
+- Update `README.md` with the project name.
+- **Confirm the `bot_id` with the user before proceeding**.This name appears in Maestro and in logs.
 
 If cloning fails (e.g., corporate network), offer this fallback:
 
@@ -45,21 +45,19 @@ Minimum generated structure:
 
 ```
 <bot_id>/
-├── MANIFEST.in
 ├── README.md
-├── VERSION
 ├── <bot_id>/
 │   ├── __init__.py
-│   ├── __main__.py     # entrypoint — do not modify
-│   ├── bot.py
+│   ├── __main__.py     
+│   ├── flow.py
 │   └── resources/
 ├── requirements.txt
-├── setup.py
+├── bot.py            # entrypoint — do not modify
 ├── build.sh
 └── build.bat
 ```
 
-Expand this structure in Step 4 — do not replace it.
+Expand this structure in Step 4 - do not replace it.
 
 ---
 
@@ -96,7 +94,7 @@ With the validated summary, transcribe action by action. Read `references/uipath
 
 Every corporate automation must, at minimum:
 1. Instantiate the SDK and retrieve the current execution.
-2. Report a final status (`SUCCESS`, `FAILED`, `PARTIALLY_COMPLETED`).
+2. Report a final status (`SUCCESS`, `FAILED`, `PARTIALLY_COMPLETED`). Use the `AutomationTaskFinishStatus` Class.
 3. Emit alerts (`AlertType.INFO/WARN/ERROR`) at critical points.
 4. Log quantitative results (`new_result_step`) — items processed, items failed, etc.
 
@@ -108,7 +106,7 @@ from __future__ import annotations
 
 import logging
 
-from botcity.maestro import AlertType, BotExecution, BotMaestroSDK, FinishStatus
+from botcity.maestro import AlertType, BotExecution, BotMaestroSDK, AutomationTaskFinishStatus
 
 BotMaestroSDK.RAISE_NOT_CONNECTED = False  # don't crash when running locally without Maestro
 
@@ -127,13 +125,13 @@ def main() -> None:
 
         maestro.finish_task(
             task_id=execution.task_id,
-            status=FinishStatus.SUCCESS,
+            status=AutomationTaskFinishStatus.SUCCESS,
             message=f"Processed {total} items, {errors} with errors.",
             total_items=total,
             processed_items=total - errors,
             failed_items=errors,
         )
-    except Exception as exc:  # noqa: BLE001 — bot boundary, log and report
+    except Exception as exc:
         logger.exception("Unhandled failure during bot execution.")
         maestro.alert(
             task_id=execution.task_id,
@@ -143,7 +141,7 @@ def main() -> None:
         )
         maestro.finish_task(
             task_id=execution.task_id,
-            status=FinishStatus.FAILED,
+            status=AutomationTaskFinishStatus.FAILED,
             message=f"Error: {exc}",
         )
         raise
@@ -161,7 +159,7 @@ Consult `references/uipath_to_python.md` for each identified activity. Quick rul
 
 | Need | Default | Alternative |
 |------|---------|-------------|
-| Web automation | `playwright` | `selenium` for existing projects |
+| Web automation | `botcity-web-framework` | `selenium` for existing projects |
 | Desktop (Computer Vision) | `botcity-framework-core` | — |
 | Excel | `openpyxl` for raw files | `pandas` for transformations |
 | PDF text/tables | `pdfplumber` | `pypdf` ≥ 6.7.2 |
@@ -169,7 +167,7 @@ Consult `references/uipath_to_python.md` for each identified activity. Quick rul
 | Database | `sqlalchemy` | — |
 | OCR | `pytesseract` | `easyocr` for high volume |
 
-Do not mix automation styles: if you choose `playwright`, use it throughout. Never combine `selenium` and `playwright` in the same bot.
+Do not mix automation styles: if you choose `botcity-web-framework`, use it throughout. Never combine `selenium` and `playwright` in the same bot.
 
 ---
 
@@ -179,15 +177,13 @@ Expand the BeAPro template into this layout:
 
 ```
 <bot_id>/
+├── bot.py                      # entrypoint + Maestro integration
 ├── README.md
-├── VERSION
 ├── requirements.txt
-├── setup.py
 ├── .env.example
 ├── <bot_id>/
 │   ├── __init__.py
 │   ├── __main__.py
-│   ├── bot.py                      # entrypoint + Maestro integration
 │   ├── flow.py                     # high-level flow orchestration
 │   ├── config.py                   # constants, paths, .env loading
 │   ├── actions/                    # reusable atomic actions
@@ -270,7 +266,7 @@ Before marking the project complete:
 - [ ] No hardcoded credentials — all via `.env` or Maestro credentials.
 - [ ] Folder structure matches the layout above.
 - [ ] `requirements.txt` is unpinned and contains only what is actually used.
-- [ ] `README.md` explains how to run locally (`python -m <bot_id>`) and how to package for Maestro (`./build.sh`).
+- [ ] `README.md` explains how to run locally (`python -m <bot_id>`) and how to deploy it into Maestro(`./build.sh`).
 
 ---
 
