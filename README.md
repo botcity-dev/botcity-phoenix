@@ -56,7 +56,7 @@ Você também pode dar mais contexto na chamada:
 
 ### O que esperar do output
 
-- Um arquivo `.py` com a automação migrada
+- Arquivos `.py` com a automação migrada e lógica devidamente implementada.
 - Um `requirements.txt` com as libs BotCity necessárias
 - Um `MIGRATION_NOTES.md` com tudo que precisa de atenção (seletores, credenciais, etc.)
 
@@ -72,19 +72,19 @@ Phoenix faz o melhor possível, mas custom activities geralmente viram um `# TOD
 Não diretamente. Phoenix converte os seletores UiPath para o padrão BotCity (`find` + `find_text`), mas seletores muito específicos do UiPath Studio podem precisar de ajuste manual. A skill marca esses pontos.
 
 **"Suporta orquestração via UiPath Orchestrator?"**
-Não — a saída é código BotCity puro. Pra orquestração, recomendamos o BotCity Maestro.
+Não. a saída é código Python puro. Pra orquestração, recomendamos o BotCity Orchestrator.
 
 **"Posso converter um projeto inteiro com várias `.xaml`?"**
-Pode. Aponta o Claude Code pra pasta raiz do projeto e roda `/phoenix-botcity converter o projeto inteiro`. Phoenix processa todas, mantendo a estrutura.
+Pode. Aponte o Claude Code pra pasta raiz do projeto e roda `/phoenix-botcity converter o projeto inteiro`. Phoenix processa todo os arqivos, mantendo a estrutura do fluxo da automação.
 
 **"Variáveis do tipo `DataTable` do UiPath viram o quê?"**
 Pandas DataFrames. É a tradução mais idiomática em Python.
 
 **"O código gerado está esquisito / com bugs"**
-Acontece. Phoenix é um acelerador, não um substituto pra revisão. Abra uma issue no repo interno do BotCity com o `.xaml` original e o output gerado.
+Isso pode ocorrer, pois o Phoenix é um acelerador, não um substituto pra revisão. Abra uma issue no repo interno do BotCity com o `.xaml` original e o output gerado.
 
 **"Posso usar em projetos comerciais de clientes?"**
-Sim, é essa a ideia. Só lembra de validar o output antes de entregar — você é responsável pela automação final.
+Sim, é essa a ideia. Lembre-se de validar o output antes de implantar o projeto em produção, já você é responsável pela automação final.
 
 ---
 
@@ -151,7 +151,7 @@ Phoenix does its best, but custom activities usually become a `# TODO` in the Py
 Not directly. Phoenix converts UiPath selectors to BotCity's pattern (`find` + `find_text`), but very Studio-specific selectors may need manual tuning. The skill flags these spots.
 
 **"Does it support UiPath Orchestrator orchestration?"**
-No — the output is pure BotCity code. For orchestration, we recommend BotCity Maestro.
+No — the output is pure Python code. For orchestration, we recommend BotCity Orchestrator.
 
 **"Can I convert a whole project with multiple `.xaml` files?"**
 Yes. Point Claude Code at the project root and run `/phoenix-botcity convert the whole project`. Phoenix processes all of them while keeping the structure.
