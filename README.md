@@ -13,10 +13,10 @@ Phoenix é uma skill do Claude Code que pega arquivos do UiPath (`.xaml` + `.jso
 
 ### O que você precisa antes de começar
 
-1. **Claude Code instalado** — se ainda não tem, [pega aqui](https://docs.claude.com/en/docs/claude-code).
+1. **Claude Code instalado** — se ainda não tem, [Instale aqui](https://docs.claude.com/en/docs/claude-code).
 2. **Arquivos do processo UiPath**:
    - O arquivo `.xaml` (o workflow em si)
-   - O arquivo `.json` (geralmente `project.json` — contém dependências e config)
+   - O arquivo `.json` (geralmente `project.json`, pois contém dependências e config)
 3. **BotCity SDK** no seu ambiente Python (`pip install botcity-framework-core`).
 
 ### Instalando a skill
@@ -31,7 +31,7 @@ mkdir -p ~/.claude/skills
 cp -r ./phoenix-botcity ~/.claude/skills/
 ```
 
-Pronto. Sério, é isso. Reinicie o Claude Code e a skill estará disponível.
+Por fim, reinicie o Claude Code e a skill estará disponível.
 
 ### Como usar
 
@@ -110,7 +110,7 @@ mkdir -p ~/.claude/skills
 cp -r ./phoenix-botcity ~/.claude/skills/
 ```
 
-That's it. Really. Restart Claude Code and the skill will be available.
+That's it. Restart Claude Code and the skill will be available.
 
 ### How to use it
 
@@ -171,7 +171,7 @@ Yes, that's the whole idea. Just validate the output before shipping — you're 
 
 Because migrating from UiPath to Python isn't just a port — it's a rebirth. Your automation comes back leaner, version-controllable, license-free, and ready to live in any CI/CD pipeline you throw at it.
 
-*Porque migrar do UiPath pra Python não é só portar — é renascer. Sua automação volta mais enxuta, versionável, sem amarras de licença, e pronta pra rodar em qualquer pipeline de CI/CD.*
+*Porque migrar do UiPath pra Python não é só transcrever código — é renascer. Sua automação volta mais enxuta, versionável, sem amarras de licença, e pronta pra rodar em qualquer pipeline de CI/CD e pronta para rodar no orquestrador da BotCity.*
 
 ---
 
