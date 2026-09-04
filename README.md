@@ -14,6 +14,7 @@ Phoenix é uma skill do Claude Code que pega arquivos do UiPath (`.xaml` + `.jso
 ### O que você precisa antes de começar
 
 1. **Claude Code instalado** — se ainda não tem, [Instale aqui](https://docs.claude.com/en/docs/claude-code).
+
 2. **Arquivos do processo UiPath**:
    - O arquivo `.xaml` (o workflow em si)
    - O arquivo `.json` (geralmente `project.json`, pois contém dependências e config)

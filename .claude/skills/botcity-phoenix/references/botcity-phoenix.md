@@ -16,6 +16,20 @@ Keep this file open while performing the transcription.
 | Inject JS / Execute Script | `driver.execute_script()` · `page.evaluate()` | — |
 | Web Automation with Computer Vision | `botcity-framework-web` | ≥ 0.20.0 |
 
+- Basic setup using BotCity's web framework, ask user if it wants a proper python library to manage webdriver and ask it which Web Browser will be used:
+
+```
+def init_webbot():
+    STATE.webbot = WebBot()
+    bot = STATE.webbot
+    bot.browser = Browser.CHROME
+    bot.driver_path = ChromeDriverManager().install()
+    bot.headless = False
+    bot.browse(RPA_CHALLENGE_URL)
+    bot.find_element(START_BUTTON_SELECTOR, By.CSS_SELECTOR, ensure_clickable=True).click()
+
+```
+
 ## 2. Desktop Automation (UiPath.UIAutomation Desktop)
 
 | UiPath Action | Python Equivalent | Suggested Stable Version |

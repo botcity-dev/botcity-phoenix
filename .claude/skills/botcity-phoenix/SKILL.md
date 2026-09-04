@@ -18,7 +18,7 @@ Follow these four steps **in order**. Do not skip any step or write Python code 
 2. **Read and summarize the `.xaml`** clearly and concisely.
 3. **Transcribe the `.xaml` to Python**, action by action, using `references/uipath_to_python.md` and the Maestro SDK.
 4. **Generate the folder structure** and an unpinned `requirements.txt`.
-
+5. **Do not execute any test without user's specific request.**
 ---
 
 ## Step 1 — Clone the BeAPro Template
