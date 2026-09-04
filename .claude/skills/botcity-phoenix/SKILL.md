@@ -18,7 +18,7 @@ Follow these four steps **in order**. Do not skip any step or write Python code 
 2. **Read and summarize the `.xaml`** clearly and concisely.
 3. **Transcribe the `.xaml` to Python**, action by action, using `references/uipath_to_python.md` and the Maestro SDK.
 4. **Generate the folder structure** and an unpinned `requirements.txt`.
-
+5. **Do not execute any test without user's specific request.**
 ---
 
 ## Step 1 — Clone the BeAPro Template
@@ -244,7 +244,7 @@ pypdf  # pin to >= 6.7.2 after tests (earlier versions have a DoS CVE)
 
 ## Gotchas
 
-- **`bot_id` naming**: the `bot_id` must match exactly between the Maestro registration and the Python package name — a mismatch causes the Runner to fail silently.
+- **`bot_id` naming**: the `bot_id` must match exactly between the Maestro registration and the Python package name, a mismatch causes the Runner to fail silently.
 - **`BotMaestroSDK.RAISE_NOT_CONNECTED = False`**: set this before any SDK call, not just before `from_sys_args()`, or local runs without a Maestro connection will crash immediately.
 - **`Invoke Workflow File` in `.xaml`**: each referenced sub-workflow should become its own module in `flow.py`, not a separate `bot.py`. Ask the user for all referenced `.xaml` files before starting the transcription.
 - **Selenium Grid vs. local WebDriver**: if the original UiPath bot targeted a remote browser, the `playwright` equivalent needs `connect_over_cdp()` or `connect()`, not a local `launch()`.
