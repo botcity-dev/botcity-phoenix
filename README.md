@@ -13,10 +13,11 @@ Phoenix é uma skill do Claude Code que pega arquivos do UiPath (`.xaml` + `.jso
 
 ### O que você precisa antes de começar
 
-1. **Claude Code instalado** — se ainda não tem, [pega aqui](https://docs.claude.com/en/docs/claude-code).
+1. **Claude Code instalado** — se ainda não tem, [Instale aqui](https://docs.claude.com/en/docs/claude-code).
+
 2. **Arquivos do processo UiPath**:
    - O arquivo `.xaml` (o workflow em si)
-   - O arquivo `.json` (geralmente `project.json` — contém dependências e config)
+   - O arquivo `.json` (geralmente `project.json`, pois contém dependências e config)
 3. **BotCity SDK** no seu ambiente Python (`pip install botcity-framework-core`).
 
 ### Instalando a skill
@@ -31,7 +32,7 @@ mkdir -p ~/.claude/skills
 cp -r ./phoenix-botcity ~/.claude/skills/
 ```
 
-Pronto. Sério, é isso. Reinicie o Claude Code e a skill estará disponível.
+Por fim, reinicie o Claude Code e a skill estará disponível.
 
 ### Como usar
 
@@ -56,7 +57,7 @@ Você também pode dar mais contexto na chamada:
 
 ### O que esperar do output
 
-- Um arquivo `.py` com a automação migrada
+- Arquivos `.py` com a automação migrada e lógica devidamente implementada.
 - Um `requirements.txt` com as libs BotCity necessárias
 - Um `MIGRATION_NOTES.md` com tudo que precisa de atenção (seletores, credenciais, etc.)
 
@@ -72,19 +73,19 @@ Phoenix faz o melhor possível, mas custom activities geralmente viram um `# TOD
 Não diretamente. Phoenix converte os seletores UiPath para o padrão BotCity (`find` + `find_text`), mas seletores muito específicos do UiPath Studio podem precisar de ajuste manual. A skill marca esses pontos.
 
 **"Suporta orquestração via UiPath Orchestrator?"**
-Não — a saída é código BotCity puro. Pra orquestração, recomendamos o BotCity Maestro.
+Não. a saída é código Python puro. Pra orquestração, recomendamos o BotCity Orchestrator.
 
 **"Posso converter um projeto inteiro com várias `.xaml`?"**
-Pode. Aponta o Claude Code pra pasta raiz do projeto e roda `/phoenix-botcity converter o projeto inteiro`. Phoenix processa todas, mantendo a estrutura.
+Pode. Aponte o Claude Code pra pasta raiz do projeto e roda `/phoenix-botcity converter o projeto inteiro`. Phoenix processa todo os arqivos, mantendo a estrutura do fluxo da automação.
 
 **"Variáveis do tipo `DataTable` do UiPath viram o quê?"**
 Pandas DataFrames. É a tradução mais idiomática em Python.
 
 **"O código gerado está esquisito / com bugs"**
-Acontece. Phoenix é um acelerador, não um substituto pra revisão. Abra uma issue no repo interno do BotCity com o `.xaml` original e o output gerado.
+Isso pode ocorrer, pois o Phoenix é um acelerador, não um substituto pra revisão. Abra uma issue no repo interno do BotCity com o `.xaml` original e o output gerado.
 
 **"Posso usar em projetos comerciais de clientes?"**
-Sim, é essa a ideia. Só lembra de validar o output antes de entregar — você é responsável pela automação final.
+Sim, é essa a ideia. Lembre-se de validar o output antes de implantar o projeto em produção, já você é responsável pela automação final.
 
 ---
 
@@ -110,7 +111,7 @@ mkdir -p ~/.claude/skills
 cp -r ./phoenix-botcity ~/.claude/skills/
 ```
 
-That's it. Really. Restart Claude Code and the skill will be available.
+That's it. Restart Claude Code and the skill will be available.
 
 ### How to use it
 
@@ -151,7 +152,7 @@ Phoenix does its best, but custom activities usually become a `# TODO` in the Py
 Not directly. Phoenix converts UiPath selectors to BotCity's pattern (`find` + `find_text`), but very Studio-specific selectors may need manual tuning. The skill flags these spots.
 
 **"Does it support UiPath Orchestrator orchestration?"**
-No — the output is pure BotCity code. For orchestration, we recommend BotCity Maestro.
+No — the output is pure Python code. For orchestration, we recommend BotCity Orchestrator.
 
 **"Can I convert a whole project with multiple `.xaml` files?"**
 Yes. Point Claude Code at the project root and run `/phoenix-botcity convert the whole project`. Phoenix processes all of them while keeping the structure.
@@ -171,7 +172,7 @@ Yes, that's the whole idea. Just validate the output before shipping — you're 
 
 Because migrating from UiPath to Python isn't just a port — it's a rebirth. Your automation comes back leaner, version-controllable, license-free, and ready to live in any CI/CD pipeline you throw at it.
 
-*Porque migrar do UiPath pra Python não é só portar — é renascer. Sua automação volta mais enxuta, versionável, sem amarras de licença, e pronta pra rodar em qualquer pipeline de CI/CD.*
+*Porque migrar do UiPath pra Python não é só transcrever código — é renascer. Sua automação volta mais enxuta, versionável, sem amarras de licença, e pronta pra rodar em qualquer pipeline de CI/CD e pronta para rodar no orquestrador da BotCity.*
 
 ---
 
